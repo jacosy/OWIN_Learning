@@ -4,9 +4,11 @@ using Microsoft.Owin;
 using Owin;
 using System.Diagnostics;
 using OwinDemo.Middlewares;
+using Nancy.Owin;
+using Nancy;
+using System.Web.Http;
 
 [assembly: OwinStartup(typeof(OwinDemo.Startup))]
-
 namespace OwinDemo
 {
     public class Startup
@@ -56,10 +58,19 @@ namespace OwinDemo
                 }
             });
 
-            app.Use(async (context, next) =>
-            {
-                await context.Response.WriteAsync("Hello World!");
-            });
+            // add web api into owin pipeline
+            var configuration = new HttpConfiguration();
+            configuration.MapHttpAttributeRoutes();
+            app.UseWebApi(configuration);
+
+            // add NancyFx into owin pipeline
+            //app.Map("/Nancy", mappedApp => mappedApp.UseNancy());
+            app.UseNancy(config => config.PassThroughWhenStatusCodesAre(HttpStatusCode.NotFound));
+            
+            //app.Use(async (context, next) =>
+            //{
+            //    await context.Response.WriteAsync("Hello World!");
+            //});
         }
     }
 }
