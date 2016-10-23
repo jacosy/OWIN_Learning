@@ -6,6 +6,8 @@ using System.Web.Security;
 using System.Web.SessionState;
 using System.Web.Mvc;
 using System.Web.Routing;
+using System.Web.Helpers;
+using System.Security.Claims;
 
 namespace OwinDemo
 {
@@ -22,6 +24,8 @@ namespace OwinDemo
                     action = "Index",
                     id = UrlParameter.Optional
                 });
+
+            AntiForgeryConfig.UniqueClaimTypeIdentifier = ClaimTypes.NameIdentifier;
         }
 
         protected void Session_Start(object sender, EventArgs e)

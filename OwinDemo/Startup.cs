@@ -7,6 +7,7 @@ using OwinDemo.Middlewares;
 using Nancy.Owin;
 using Nancy;
 using System.Web.Http;
+using Microsoft.Owin.Security.Cookies;
 
 [assembly: OwinStartup(typeof(OwinDemo.Startup))]
 namespace OwinDemo
@@ -58,15 +59,36 @@ namespace OwinDemo
                 }
             });
 
+            // add owin security middleware            
+            app.UseCookieAuthentication(new CookieAuthenticationOptions
+            {
+                AuthenticationType = "AppicationCookie",
+                LoginPath = new PathString("/Auth/Login"),
+                LogoutPath = new PathString("/Auth/Logout")
+            });
+
+            app.Use(async (context, next) =>
+            {
+                if (context.Authentication.User.Identity.IsAuthenticated)
+                {
+                    Debug.WriteLine($"User Name is {context.Authentication.User.Identity.Name}");
+                }
+                else
+                {
+                    Debug.WriteLine($"User is not authenticated yet.");
+                }
+                await next();
+            });
+
             // add web api into owin pipeline
             var configuration = new HttpConfiguration();
             configuration.MapHttpAttributeRoutes();
             app.UseWebApi(configuration);
 
             // add NancyFx into owin pipeline
-            //app.Map("/Nancy", mappedApp => mappedApp.UseNancy());
-            app.UseNancy(config => config.PassThroughWhenStatusCodesAre(HttpStatusCode.NotFound));
-            
+            app.Map("/Nancy", mappedApp => mappedApp.UseNancy());
+            //app.UseNancy(config => config.PassThroughWhenStatusCodesAre(HttpStatusCode.NotFound));
+
             //app.Use(async (context, next) =>
             //{
             //    await context.Response.WriteAsync("Hello World!");
